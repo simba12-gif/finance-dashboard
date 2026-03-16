@@ -2,16 +2,13 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { usePlaidLink } from 'react-plaid-link'
-import { Button } from '@/components/ui/button'
 
 export default function PlaidLink({ onSuccess }) {
   const [linkToken, setLinkToken] = useState(null)
 
   useEffect(() => {
     async function fetchLinkToken() {
-      const response = await fetch('/api/plaid/create-link-token', {
-        method: 'POST',
-      })
+      const response = await fetch('/api/plaid/create-link-token', { method: 'POST' })
       const data = await response.json()
       setLinkToken(data.link_token)
     }
@@ -22,25 +19,34 @@ export default function PlaidLink({ onSuccess }) {
     await fetch('/api/plaid/exchange-token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        public_token,
-        institution: metadata.institution,
-      }),
+      body: JSON.stringify({ public_token, institution: metadata.institution }),
     })
-
     await fetch('/api/plaid/sync', { method: 'POST' })
-
     if (onSuccess) onSuccess()
   }, [onSuccess])
 
-  const { open, ready } = usePlaidLink({
-    token: linkToken,
-    onSuccess: onPlaidSuccess,
-  })
+  const { open, ready } = usePlaidLink({ token: linkToken, onSuccess: onPlaidSuccess })
 
   return (
-    <Button onClick={() => open()} disabled={!ready}>
-      Connect Bank Account
-    </Button>
+    <button
+      onClick={() => open()}
+      disabled={!ready}
+      style={{
+        background: '#7c3aed',
+        color: '#fff',
+        border: 'none',
+        fontSize: '12px',
+        padding: '8px 16px',
+        borderRadius: '8px',
+        cursor: ready ? 'pointer' : 'not-allowed',
+        opacity: ready ? 1 : 0.6,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        flexShrink: 0,
+      }}
+    >
+      Connect bank
+    </button>
   )
 }

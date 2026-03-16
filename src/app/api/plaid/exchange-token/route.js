@@ -6,17 +6,22 @@ export async function POST(request) {
   try {
     const { public_token, institution } = await request.json()
 
-    const response = await plaidClient.itemPublicTokenExchange({
-      public_token,
-    })
-
+    const response = await plaidClient.itemPublicTokenExchange({ public_token })
     const accessToken = response.data.access_token
     const itemId = response.data.item_id
 
-    // Save to database
+    // Check if this item already exists
+    const existing = await prisma.plaidItem.findUnique({
+      where: { itemId }
+    })
+
+    if (existing) {
+      return NextResponse.json({ success: true, itemId: existing.id, duplicate: true })
+    }
+
     const plaidItem = await prisma.plaidItem.create({
       data: {
-        userId: 'cmmrg1syj000010n2b6szrm3i',
+        userId: 'cmmte8ft100005raqposezuvp', // ← keep your actual user id
         accessToken,
         itemId,
         institution: institution?.name || 'Unknown',

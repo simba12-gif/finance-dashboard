@@ -1,7 +1,16 @@
 import { NextResponse } from 'next/server'
 import { plaidClient } from '@/lib/plaid'
 import { prisma } from '@/lib/prisma'
-
+function assignCategory(name) {
+  const n = name.toLowerCase()
+  if (n.includes('uber') || n.includes('lyft') || n.includes('airline') || n.includes('flight')) return 'Travel'
+  if (n.includes('starbucks') || n.includes('coffee') || n.includes('restaurant') || n.includes('food') || n.includes('pizza') || n.includes('mcdonald')) return 'Food & Drink'
+  if (n.includes('amazon') || n.includes('walmart') || n.includes('target') || n.includes('shop')) return 'Shopping'
+  if (n.includes('netflix') || n.includes('spotify') || n.includes('apple') || n.includes('subscription')) return 'Subscriptions'
+  if (n.includes('electric') || n.includes('water') || n.includes('internet') || n.includes('utility')) return 'Utilities'
+  if (n.includes('payroll') || n.includes('salary') || n.includes('deposit') || n.includes('income')) return 'Income'
+  return 'Other'
+}
 export async function POST() {
   try {
     const plaidItems = await prisma.plaidItem.findMany()
@@ -49,7 +58,7 @@ export async function POST() {
             amount: transaction.amount,
             date: new Date(transaction.date),
             name: transaction.name,
-            category: transaction.category?.[0] || 'Uncategorized',
+           category: transaction.category?.[0] || transaction.category?.[1] || assignCategory(transaction.name),
             pending: transaction.pending,
           },
         })
